@@ -1,0 +1,18 @@
+# FPK and copied build outputs
+/*.fpk
+/app/server/file-dedupe-server
+/app/www/*
+
+# Keep source-controlled package directories
+!/app/www/.gitkeep
+
+# Runtime files
+*.log
+*.pid
+*.sock
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

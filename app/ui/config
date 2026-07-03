@@ -1,0 +1,15 @@
+{
+  ".url": {
+    "file.dedupe.Application": {
+      "title": "file-dedupe",
+      "desc": "文件指纹查重",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "protocol": "",
+      "gatewaySocket": "file-dedupe.sock",
+      "gatewayPrefix": "/app/file-dedupe",
+      "url": "/app/file-dedupe",
+      "allUsers": true
+    }
+  }
+}

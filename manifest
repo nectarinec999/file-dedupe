@@ -1,0 +1,12 @@
+appname               = file.dedupe
+version               = 1.0.0
+display_name          = file-dedupe
+desc                  = 基于文件指纹的只读 NAS 文件查重工具，支持任务进度、重复组查看和结果导出。
+arch                  = x86_64
+source                = thirdparty
+maintainer            = 油桃本桃
+distributor           = 油桃本桃
+desktop_uidir         = ui
+desktop_applaunchname = file.dedupe.Application
+os_min_version        = 1.1.3100
+checkport             = false

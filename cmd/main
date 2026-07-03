@@ -1,0 +1,80 @@
+#!/bin/bash
+
+LOG_FILE="${TRIM_PKGVAR}/file-dedupe.log"
+PID_FILE="${TRIM_PKGVAR}/file-dedupe.pid"
+BIN="${TRIM_APPDEST}/server/file-dedupe-server"
+SOCKET_FILE="${TRIM_APPDEST}/file-dedupe.sock"
+
+pid_running() {
+  [ -r "${PID_FILE}" ] || return 1
+  pid="$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')"
+  [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null
+}
+
+is_running() {
+  pid_running && [ -S "${SOCKET_FILE}" ]
+}
+
+start_app() {
+  if is_running; then
+    return 0
+  fi
+  # 覆盖升级可能删除 target 下的 Socket，但旧进程和 PID 仍然存在。
+  # 此时必须先终止残留进程，否则网关会持续返回 Bad Gateway。
+  if pid_running; then
+    pid="$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')"
+    kill -TERM "${pid}" 2>/dev/null
+    count=0
+    while kill -0 "${pid}" 2>/dev/null && [ "${count}" -lt 5 ]; do
+      sleep 1
+      count=$((count + 1))
+    done
+    if kill -0 "${pid}" 2>/dev/null; then
+      kill -KILL "${pid}" 2>/dev/null
+    fi
+  fi
+  rm -f "${PID_FILE}"
+  mkdir -p "${TRIM_PKGVAR}"
+  rm -f "${SOCKET_FILE}"
+  FILE_DEDUPE_SOCKET="${SOCKET_FILE}" \
+  FILE_DEDUPE_BASE_PATH="/app/file-dedupe" \
+  FILE_DEDUPE_REQUIRE_GATEWAY_AUTH="true" \
+  FILE_DEDUPE_DATA_DIR="${TRIM_PKGVAR}" \
+  FILE_DEDUPE_WEB_DIR="${TRIM_APPDEST}/www" \
+    "${BIN}" >>"${LOG_FILE}" 2>&1 &
+  printf "%s" "$!" >"${PID_FILE}"
+  count=0
+  while pid_running && [ ! -S "${SOCKET_FILE}" ] && [ "${count}" -lt 10 ]; do
+    sleep 1
+    count=$((count + 1))
+  done
+  if is_running; then
+    return 0
+  fi
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - ERROR: service failed to create ${SOCKET_FILE}" >>"${LOG_FILE}"
+  return 1
+}
+
+stop_app() {
+  if pid_running; then
+    pid="$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')"
+    kill -TERM "${pid}" 2>/dev/null
+    count=0
+    while kill -0 "${pid}" 2>/dev/null && [ "${count}" -lt 10 ]; do
+      sleep 1
+      count=$((count + 1))
+    done
+    if kill -0 "${pid}" 2>/dev/null; then
+      kill -KILL "${pid}" 2>/dev/null
+    fi
+  fi
+  rm -f "${PID_FILE}"
+  rm -f "${SOCKET_FILE}"
+}
+
+case "$1" in
+  start) start_app ;;
+  stop) stop_app ;;
+  status) if is_running; then exit 0; else exit 3; fi ;;
+  *) exit 1 ;;
+esac

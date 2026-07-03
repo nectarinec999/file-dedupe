@@ -1,0 +1,71 @@
+#!/bin/bash
+
+LOG_FILE="${TRIM_PKGVAR}/file-dedupe.log"
+PID_FILE="${TRIM_PKGVAR}/file-dedupe.pid"
+SOCKET_FILE="${TRIM_APPDEST}/file-dedupe.sock"
+
+log_msg() {
+  if [ -n "${TRIM_PKGVAR}" ] && [ -d "${TRIM_PKGVAR}" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >>"${LOG_FILE}"
+  fi
+}
+
+remove_owned_file() {
+  path="$1"
+  [ -n "${path}" ] && [ "${path}" != "/" ] && [ -n "${TRIM_APPNAME}" ] || return 1
+  case "${path}" in
+    /var/apps/"${TRIM_APPNAME}"/*|*/"${TRIM_APPNAME}"/*) rm -f -- "${path}" ;;
+    *) return 1 ;;
+  esac
+}
+
+stop_process() {
+  if [ -n "${TRIM_PKGVAR}" ] && [ -r "${PID_FILE}" ]; then
+    pid="$(head -n 1 "${PID_FILE}" | tr -d '[:space:]')"
+    if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+      kill -TERM "${pid}" 2>/dev/null
+      count=0
+      while kill -0 "${pid}" 2>/dev/null && [ "${count}" -lt 10 ]; do
+        sleep 1
+        count=$((count + 1))
+      done
+      if kill -0 "${pid}" 2>/dev/null; then
+        kill -KILL "${pid}" 2>/dev/null
+      fi
+    fi
+  fi
+  remove_owned_file "${PID_FILE}" || true
+  remove_owned_file "${SOCKET_FILE}" || true
+}
+
+safe_clear_dir() {
+  path="$1"
+  [ -n "${path}" ] && [ "${path}" != "/" ] && [ -n "${TRIM_APPNAME}" ] || return 1
+  [ -e "${path}" ] || return 0
+  resolved="$(readlink -f -- "${path}" 2>/dev/null || printf '%s' "${path}")"
+  [ -n "${resolved}" ] && [ "${resolved}" != "/" ] || return 1
+  case "${resolved}" in
+    /var/apps/"${TRIM_APPNAME}"|/var/apps/"${TRIM_APPNAME}"/*|*/"${TRIM_APPNAME}"|*/"${TRIM_APPNAME}"/*)
+      if [ -d "${resolved}" ]; then
+        find "${resolved}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+      fi
+      ;;
+    *)
+      log_msg "Refused to clean unexpected path: ${path} -> ${resolved}"
+      return 1
+      ;;
+  esac
+}
+
+log_msg "Uninstall callback: data_action=${wizard_data_action:-keep}"
+stop_process
+
+# 只有用户在卸载向导中明确选择删除时才清理数据。
+if [ "${wizard_data_action}" = "delete" ]; then
+  safe_clear_dir "${TRIM_PKGTMP}" || true
+  safe_clear_dir "${TRIM_PKGHOME}" || true
+  safe_clear_dir "${TRIM_PKGETC}" || true
+  safe_clear_dir "${TRIM_PKGVAR}" || true
+fi
+
+exit 0
