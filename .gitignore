@@ -1,10 +1,5 @@
-# FPK and copied build outputs
+# FPK output
 /*.fpk
-/app/server/file-dedupe-server
-/app/www/*
-
-# Keep source-controlled package directories
-!/app/www/.gitkeep
 
 # Runtime files
 *.log
