@@ -1,5 +1,5 @@
 appname               = file.dedupe
-version               = 1.0.0
+version               = 1.0.1
 display_name          = File Dedupe
 desc                  = 基于文件指纹算法的 NAS 文件查重工具，支持任务进度、重复组查看和结果导出。
 arch                  = x86_64
