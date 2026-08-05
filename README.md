@@ -2,7 +2,7 @@
 
 file-dedupe 的飞牛 fnOS Native 应用打包工程。
 
-当前版本使用飞牛开放 API 的应用共享目录授权能力，要求 fnOS `1.2.0401` 及以上、飞牛客户端 `1.34.0` 及以上。前端通过官方 SDK 的 `pickFile` 选择扫描目录、通过 `pickSharedFile` 授权共享文件夹；后端使用 `trim.file.sharedAccess` Scope 查询授权范围并校验实际访问权限。
+当前版本使用飞牛开放 API 的应用共享目录授权能力，要求 fnOS `1.2.0401` 及以上、飞牛客户端 `1.34.0` 及以上。前端通过官方 SDK 的 `pickSharedFile` 一次完成扫描目录选择与共享授权，并可用 `pickFile` 从已有授权范围选择子目录；后端使用 `trim.file.sharedAccess` Scope 查询授权范围并校验实际访问权限。
 
 仓库已经包含：
 
