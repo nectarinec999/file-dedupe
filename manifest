@@ -8,5 +8,6 @@ maintainer            = 油桃本桃
 distributor           = 油桃本桃
 desktop_uidir         = ui
 desktop_applaunchname = file.dedupe.Application
-os_min_version        = 1.1.3100
+micro_app             = true
+os_min_version        = 1.2.0401
 checkport             = false
