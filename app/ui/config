@@ -1,7 +1,7 @@
 {
   ".url": {
     "file.dedupe.Application": {
-      "title": "file-dedupe",
+      "title": "文件查重",
       "desc": "文件指纹查重",
       "icon": "images/icon_{0}.png",
       "type": "iframe",
