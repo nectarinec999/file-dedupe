@@ -1,11 +1,13 @@
 appname               = file.dedupe
-version               = 1.0.1
+version               = 1.0.2
 display_name          = 文件查重
 desc                  = 基于文件指纹算法的 NAS 文件查重工具，支持任务进度、重复组查看和结果导出。
 arch                  = x86_64
 source                = thirdparty
 maintainer            = 万物不及油桃
+maintainer_url        = https://github.com/nectarinec999
 distributor           = 万物不及油桃
+distributor_url       = https://github.com/nectarinec999
 desktop_uidir         = ui
 desktop_applaunchname = file.dedupe.Application
 micro_app             = true
